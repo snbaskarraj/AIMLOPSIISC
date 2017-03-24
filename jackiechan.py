@@ -46,6 +46,10 @@ my_row = clean.map(lambda x: {
        datetime.strptime(time_now, '%Y-%m-%d %H:%M:%S.%f')).microseconds,
       
 # my_row.pprint()
+      parsed = kafka_stream.map(lambda (k, v): json.loads(v))
+      summed = parsed.map(lambda event: (event['site_id'], 1)).\
+                reduceByKey(lambda x,y: x + y).\
+                map(lambda x: {"site_id": x[0], "ts": str(uuid1()), "pageviews": x[1]})
 
 my_row.saveToCassandra("KEYSPACE", "TABLE_NAME")
 
